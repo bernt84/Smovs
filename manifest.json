@@ -2,7 +2,7 @@
   "name": "Smovs",
   "short_name": "Smovs",
   "description": "Smovs — pizza, brød, kager og madpakke med skalering, hæveplaner, forfermenter og kalorier.",
-  "start_url": "./smovs.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
