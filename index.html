@@ -41,6 +41,14 @@
   .wakebtn:focus-visible{outline:2px solid var(--flour);outline-offset:2px}
   .wakedot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:.15s}
   .wakebtn[aria-pressed="true"] .wakedot{background:#1a1714;box-shadow:0 0 0 3px rgba(26,23,20,.25)}
+  .installbtn{margin:14px 8px 0;appearance:none;border:1px solid var(--crust);
+    background:linear-gradient(180deg,var(--crust),var(--crust-dim));color:#1a1714;
+    font-family:inherit;font-size:15px;font-weight:600;padding:10px 20px;border-radius:999px;cursor:pointer;transition:.15s}
+  .installbtn:hover{filter:brightness(1.08)}
+  .installbtn:focus-visible{outline:2px solid var(--flour);outline-offset:2px}
+  .ioshint{max-width:420px;margin:14px auto 0;padding:10px 14px;border-radius:10px;
+    background:var(--panel-2);border:1px solid var(--line);color:var(--muted);font-size:13px;line-height:1.5}
+  .ioshint b{color:var(--flour)}
 
   .favband{margin:22px 0 6px}
   .favband .favlabel{font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.18em;
@@ -159,6 +167,10 @@
     <button id="wakeBtn" class="wakebtn" aria-pressed="false" title="Hold skærmen tændt">
       <span class="wakedot"></span><span id="wakeLabel">Hold skærm tændt</span>
     </button>
+    <button id="installBtn" class="installbtn" hidden>⬇ Installér Smovs</button>
+    <div id="iosHint" class="ioshint" hidden>
+      Installér på iPhone: tryk <b>Del</b>-ikonet nederst og vælg <b>“Føj til hjemmeskærm”</b>.
+    </div>
   </header>
 
   <div class="favband" id="favband"></div>
@@ -1177,6 +1189,48 @@ if("serviceWorker" in navigator){
     navigator.serviceWorker.register("sw.js").catch(()=>{ /* offline-cache utilgængelig; appen virker stadig online */ });
   });
 }
+
+/* ---- PWA: installationsknap ---- */
+(function(){
+  const installBtn=document.getElementById("installBtn");
+  const iosHint=document.getElementById("iosHint");
+  let deferredPrompt=null;
+
+  // er appen allerede installeret / kører i standalone?
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone===true;
+
+  // iOS Safari understøtter ikke beforeinstallprompt → vis manuel vejledning
+  const ua=window.navigator.userAgent.toLowerCase();
+  const isIOS=/iphone|ipad|ipod/.test(ua);
+  const isSafari=/safari/.test(ua) && !/crios|fxios|chrome/.test(ua);
+
+  window.addEventListener("beforeinstallprompt",(e)=>{
+    e.preventDefault();
+    deferredPrompt=e;
+    if(!isStandalone && installBtn){ installBtn.hidden=false; }
+  });
+
+  if(installBtn){
+    installBtn.addEventListener("click", async ()=>{
+      if(!deferredPrompt)return;
+      deferredPrompt.prompt();
+      try{ await deferredPrompt.userChoice; }catch(e){}
+      deferredPrompt=null;
+      installBtn.hidden=true;
+    });
+  }
+
+  window.addEventListener("appinstalled",()=>{
+    if(installBtn)installBtn.hidden=true;
+    if(iosHint)iosHint.hidden=true;
+    deferredPrompt=null;
+  });
+
+  // iOS: ingen automatisk prompt — vis vejledning hvis ikke allerede installeret
+  if(isIOS && isSafari && !isStandalone && iosHint){
+    iosHint.hidden=false;
+  }
+})();
 </script>
 </body>
 </html>
