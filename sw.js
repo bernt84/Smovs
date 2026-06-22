@@ -1,7 +1,7 @@
 /* Bageberegner service worker */
-const CACHE = "smovs-v2";
+const CACHE = "smovs-v3";
 const ASSETS = [
-  "./smovs.html",
+  "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
@@ -41,7 +41,7 @@ self.addEventListener("fetch", (e) => {
           }
           return res;
         })
-        .catch(() => caches.match("./smovs.html"));
+        .catch(() => caches.match("./index.html"));
     })
   );
 });
