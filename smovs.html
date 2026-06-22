@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smovs</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1714">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Smovs">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>
+  :root{
+    --bg:#1a1714;--panel:#23201c;--panel-2:#2c2823;--line:#3a352e;
+    --ink:#efe9df;--muted:#a89c8a;--flour:#e8d9b8;
+    --crust:#c8732e;--crust-dim:#9c5a24;--ember:#d94f2a;--ok:#7ea36b;
+    --gold:#e0b341;--radius:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 700px at 50% -200px,#2a241d 0%,transparent 60%),var(--bg);
+    color:var(--ink);
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    line-height:1.5;min-height:100vh;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:28px 18px 80px}
+  header.top{text-align:center;padding:18px 0 22px}
+  .kicker{font-family:ui-monospace,Menlo,Consolas,monospace;text-transform:uppercase;
+    letter-spacing:.28em;font-size:11px;color:var(--crust);margin:0 0 10px}
+  h1{font-size:clamp(34px,8vw,52px);line-height:.96;margin:0;font-weight:600;letter-spacing:-.01em}
+  h1 .ovn{color:var(--flour)}
+  .sub{color:var(--muted);font-size:15px;margin-top:12px}
+  .wakebtn{margin-top:16px;appearance:none;display:inline-flex;align-items:center;gap:8px;
+    border:1px solid var(--line);background:var(--panel);color:var(--muted);
+    font-family:ui-monospace,monospace;font-size:12px;letter-spacing:.06em;
+    padding:8px 14px;border-radius:999px;cursor:pointer;transition:.15s}
+  .wakebtn:hover{color:var(--ink);border-color:var(--crust-dim)}
+  .wakebtn[aria-pressed="true"]{background:var(--crust-dim);color:#1a1714;border-color:var(--crust)}
+  .wakebtn:focus-visible{outline:2px solid var(--flour);outline-offset:2px}
+  .wakedot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:.15s}
+  .wakebtn[aria-pressed="true"] .wakedot{background:#1a1714;box-shadow:0 0 0 3px rgba(26,23,20,.25)}
+
+  .favband{margin:22px 0 6px}
+  .favband .favlabel{font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--gold);margin:0 0 8px;display:flex;align-items:center;gap:6px}
+  .favrow{display:flex;flex-wrap:wrap;gap:8px}
+  .favrow .empty{color:var(--muted);font-size:13px;font-style:italic}
+
+  .catbar{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:18px 0 0}
+  .cat{appearance:none;border:1px solid var(--line);background:transparent;color:var(--muted);
+    font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    padding:6px 12px;border-radius:8px;cursor:pointer;transition:.12s}
+  .cat:hover{color:var(--ink)}
+  .cat[aria-selected="true"]{background:var(--crust-dim);color:#1a1714;border-color:var(--crust)}
+  .picker{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 4px}
+  .chip{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--muted);
+    font-family:inherit;font-size:15px;padding:9px 16px;border-radius:999px;cursor:pointer;transition:.15s;
+    display:inline-flex;align-items:center;gap:7px}
+  .chip:hover{color:var(--ink);border-color:var(--crust-dim)}
+  .chip[aria-selected="true"]{background:linear-gradient(180deg,var(--crust),var(--crust-dim));
+    color:#1a1714;border-color:var(--crust);font-weight:600}
+  .chip:focus-visible{outline:2px solid var(--flour);outline-offset:2px}
+  .chip.fav[aria-selected="true"]{background:linear-gradient(180deg,var(--gold),#b88a2a)}
+  .star{font-size:13px;line-height:1}
+
+  .card{background:linear-gradient(180deg,var(--panel) 0%,#211d19 100%);border:1px solid var(--line);
+    border-radius:var(--radius);padding:22px;margin-top:18px;box-shadow:0 18px 50px -30px #000}
+  .cardhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .card h2{margin:0 0 4px;font-size:26px;font-weight:600}
+  .desc{color:var(--muted);font-size:14px;margin:0 0 18px}
+  .favbtn{flex:0 0 auto;appearance:none;border:1px solid var(--line);background:var(--panel-2);
+    color:var(--muted);width:42px;height:42px;border-radius:50%;cursor:pointer;font-size:20px;transition:.15s}
+  .favbtn:hover{border-color:var(--gold);color:var(--gold)}
+  .favbtn[aria-pressed="true"]{background:var(--gold);color:#1a1714;border-color:var(--gold)}
+  .favbtn:focus-visible{outline:2px solid var(--flour);outline-offset:2px}
+
+  .subtabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 16px}
+  .subtab{appearance:none;border:1px solid var(--line);background:var(--bg);color:var(--muted);
+    font-family:inherit;font-size:14px;padding:7px 13px;border-radius:9px;cursor:pointer;transition:.12s}
+  .subtab:hover{color:var(--ink)}
+  .subtab[aria-selected="true"]{background:var(--panel-2);color:var(--flour);border-color:var(--crust-dim)}
+
+  .controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;padding:16px;
+    background:var(--panel-2);border:1px solid var(--line);border-radius:12px;margin-bottom:20px}
+  .ctrl{flex:1 1 160px;min-width:160px}
+  .ctrl label{display:block;font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .stepper{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg)}
+  .stepper button{width:42px;border:0;background:var(--panel);color:var(--crust);font-size:22px;
+    cursor:pointer;font-family:inherit;line-height:1;transition:.12s;flex:0 0 auto}
+  .stepper button:hover{background:var(--crust);color:#1a1714}
+  .stepper input{flex:1;min-width:48px;border:0;background:transparent;color:var(--ink);text-align:center;
+    font-size:22px;font-family:inherit;padding:8px 4px;-moz-appearance:textfield}
+  .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .stepper input:focus{outline:none}
+  .stepper .suffix{display:flex;align-items:center;padding:0 12px 0 2px;color:var(--muted);
+    font-family:ui-monospace,monospace;font-size:14px;flex:0 0 auto}
+  .unit{color:var(--muted);font-size:13px;margin-top:6px;text-align:center;font-family:ui-monospace,monospace}
+  select.sel{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);
+    color:var(--ink);font-family:inherit;font-size:16px;cursor:pointer}
+  select.sel:focus{outline:2px solid var(--crust-dim);outline-offset:1px}
+
+  table{width:100%;border-collapse:collapse;margin-top:4px}
+  caption{text-align:left;font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--muted);padding-bottom:8px}
+  th,td{padding:11px 6px;text-align:left;border-bottom:1px solid var(--line)}
+  th{font-weight:400;color:var(--ink)}
+  .note-inline{color:var(--muted);font-size:12px;font-style:italic}
+  td.amt{text-align:right;font-family:ui-monospace,monospace;font-size:18px;color:var(--flour);
+    white-space:nowrap;font-variant-numeric:tabular-nums}
+  td.u{text-align:left;color:var(--muted);font-size:13px;width:46px;padding-left:8px;font-family:ui-monospace,monospace}
+  tr.tot td{border-bottom:0;padding-top:14px}
+  tr.tot th{font-weight:600;color:var(--crust)}
+  tr.tot td.amt{color:var(--crust);font-weight:600}
+  tr.ingsec th{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--crust);padding-top:18px;border-bottom:1px solid var(--crust-dim)}
+  tr.ingsec .note-inline{display:inline;font-style:normal;color:var(--muted);text-transform:none;letter-spacing:0}
+
+  .method{margin-top:22px}
+  .method h3{font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--crust);margin:0 0 12px}
+  ol.steps{margin:0;padding:0;list-style:none;counter-reset:s}
+  ol.steps li{counter-increment:s;position:relative;padding:0 0 14px 38px;color:var(--ink);font-size:15px}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:-2px;width:26px;height:26px;border-radius:50%;
+    background:var(--panel-2);border:1px solid var(--crust-dim);color:var(--crust);font-family:ui-monospace,monospace;
+    font-size:13px;display:flex;align-items:center;justify-content:center}
+  ol.steps li:last-child{padding-bottom:0}
+
+  .timeline{margin-top:18px;padding:14px 16px;border-radius:12px;background:var(--panel-2);
+    border:1px dashed var(--crust-dim);font-size:14px;color:var(--ink)}
+  .timeline b{color:var(--flour)}
+  .tl-row{display:flex;gap:12px;padding:3px 0}
+  .tl-when{min-width:96px;color:var(--crust);font-family:ui-monospace,monospace;font-size:12px}
+
+  .tip{margin-top:16px;padding:12px 14px;border-left:3px solid var(--ok);background:#222a20;
+    border-radius:0 8px 8px 0;font-size:14px;color:#d6e4cd}
+  .kcal{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--panel-2);
+    border:1px solid var(--line);display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+  .kcal-main{font-family:ui-monospace,monospace;font-size:18px;color:var(--flour);font-weight:600}
+  .kcal-sub{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+  .kcal-sep{color:var(--crust-dim);margin:0 4px}
+  .kcal-note{flex:1 1 100%;font-size:12px;color:var(--muted);font-style:italic;margin-top:4px}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px;font-family:ui-monospace,monospace}
+
+  @media (max-width:520px){.card{padding:16px}.controls{padding:12px}td.amt{font-size:16px}
+    .ctrl{flex:1 1 100%;min-width:100%}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <p class="kicker">Mel · vand · varme</p>
+    <h1>Sm<span class="ovn">ovs</span></h1>
+    <p class="sub">Vælg en opskrift. Skru op for mængden. Resten regner sig selv.</p>
+    <button id="wakeBtn" class="wakebtn" aria-pressed="false" title="Hold skærmen tændt">
+      <span class="wakedot"></span><span id="wakeLabel">Hold skærm tændt</span>
+    </button>
+  </header>
+
+  <div class="favband" id="favband"></div>
+  <div class="catbar" id="catbar" role="tablist" aria-label="Kategori"></div>
+  <div class="picker" id="picker" role="tablist" aria-label="Vælg opskrift"></div>
+  <main class="card" id="card" aria-live="polite"></main>
+  <footer>Single-file · favoritter gemmes lokalt på din enhed</footer>
+</div>
+
+<script>
+const PIZZA_TYPES={
+  napoli:{navn:"Napolitansk",ball:250,defHyd:65,
+    blurb:"Caputo Cuoco \u201c00\u201d. Blød kant, kort bagetid ved høj varme.",
+    bakeText:"Bag så varmt ovnen kan — gerne 250-300°."},
+  romana:{navn:"Romana",ball:200,defHyd:58,
+    blurb:"Tynd og sprød i bunden. Mindre emne, lavere hydration, valses tyndt ud.",
+    bakeText:"Bag ved 230-250° til bunden er sprød — gerne på stål eller sten."},
+  pan:{navn:"Pan / focaccia",ball:300,defHyd:75,
+    blurb:"Tyk, luftig bund i bradepande. Høj hydration, hæver i formen.",
+    bakeText:"Bag i smurt/olieret form ved 220-240° til gylden og luftig."},
+  sauce:{navn:"Tomatsauce",isSauce:true,
+    blurb:"Autentisk italiensk stil — ingen kogning. Bland, smag til, klar. (Fra dit pizzaark.)"},
+};
+
+const RECIPES=[
+  {id:"pizza",group:"Pizza",navn:"Pizza",
+   desc:"Vælg type, antal og hydration — gæren og tidsplanen tilpasser sig selv.",
+   yieldLabel:"Antal pizzaer",baseYield:4,yieldUnit:"stk",yieldStep:1,yieldMin:1,yieldMax:30,
+   options:[
+     {id:"yeast",label:"Gær",choices:[
+       {v:"dry",t:"Tørgær",sel:true},
+       {v:"fresh",t:"Frisk gær"}]},
+     {id:"plan",label:"Hæveplan",choices:[
+       {v:"same",t:"Samme dag (6-8 t)"},
+       {v:"cold24",t:"Koldhævning 24 t",sel:true},
+       {v:"cold48",t:"Koldhævning 48 t"},
+       {v:"poolish",t:"Poolish (Bagerkokken, 48 t)"},
+       {v:"vito",t:"Poolish (Vito, honning+olie)"},
+       {v:"biga1",t:"Biga v1 (køl 24 t, tørgær)"},
+       {v:"biga2",t:"Biga v2 (stuetemp 24 t, frisk)"}]}],
+   dynamic:"pizza"},
+
+  {id:"boller",group:"Brød",navn:"Øl-grovboller",
+   desc:"Øl + mælkeprodukt + havregryn. Koldhævet med en ært gær.",
+   yieldLabel:"Antal portioner",baseYield:1,yieldUnit:"portion",yieldStep:1,yieldMin:1,yieldMax:8,
+   ingredients:[
+     {name:"Øl",amount:330,unit:"ml",note:"33 cl"},
+     {name:"Mælkeprodukt",amount:500,unit:"g",note:"mælk, tykmælk el. cremefraiche"},
+     {name:"Havregryn",amount:175,unit:"g"},
+     {name:"Hvedemel",amount:650,unit:"g"},
+     {name:"Salt",amount:15,unit:"g"},
+     {name:"Frisk gær",amount:3,unit:"g",note:"ca. en ært"}],
+   steps:[
+     "Lad havregryn trække i øl + mælkeprodukt i 15-30 min.",
+     "Smuldr gæren i (kold væske er fint til koldhævning). Rør rundt.",
+     "Tilsæt mel og salt. Rør til ensartet, klistret dej — ingen æltning nødvendig.",
+     "Tildæk. Stå fremme 1-2 timer til den er i gang.",
+     "Stil i koldt rum / køleskab natten over i en rummelig skål (den vokser kraftigt).",
+     "Skrab klatter ud på bagepapir med to skeer eller våde hænder.",
+     "Bag ved 220-230° i ca. 20-25 min til gyldne og gennembagte."],
+   tips:[
+     "Vokser den ud af skålen? Brug en større skål eller bag når den lige er toppet.",
+     "Akkurat hævet om morgenen? Lad bollerne efterhæve 30-60 min ude før de ryger i ovnen."]},
+
+  {id:"makron",group:"Kager & søde",navn:"Makron muffins",
+   desc:"Seje, søde, krakelerede. Skala efter antal muffins.",
+   yieldLabel:"Antal muffins",baseYield:12,yieldUnit:"stk",yieldStep:6,yieldMin:6,yieldMax:48,
+   ingredients:[
+     {name:"Æg",amount:3,unit:"stk",round:"egg"},
+     {name:"Sukker",amount:300,unit:"g"},
+     {name:"Mandelessens",amount:2.5,unit:"tsk"},
+     {name:"Knuste makroner",amount:125,unit:"g"},
+     {name:"Hvedemel",amount:125,unit:"g"},
+     {name:"Smeltet smør",amount:125,unit:"g"}],
+   steps:[
+     "Tænd ovnen på 200°.",
+     "Pisk æg, sukker og mandelessens.",
+     "Knus makronerne i en pose — gerne med enkelte grove stykker.",
+     "Pisk mel, smeltet smør og makroner i dejen.",
+     "Fordel i muffinsforme (str. ~75 ml).",
+     "Bag midt i ovnen ca. 20-25 min til gyldne."],
+   tips:[
+     "Fryser fint. Kan spises optøet uden at blive tørre.",
+     "Vil du have chokolade i? Ca. 100 g mørk, hakket — og 2-3 min ekstra bagetid."]},
+
+  {id:"kokos",group:"Kager & søde",navn:"Kokostoppe",
+   desc:"Dåse kondenseret mælk + kokos. Få ingredienser, ren kokos.",
+   yieldLabel:"Antal toppe",baseYield:20,yieldUnit:"stk",yieldStep:5,yieldMin:5,yieldMax:80,
+   ingredients:[
+     {name:"Sød kondenseret mælk",amount:397,unit:"g",note:"1 dåse"},
+     {name:"Kokosmel",amount:250,unit:"g"},
+     {name:"Vaniljesukker",amount:1,unit:"tsk",note:"valgfrit"},
+     {name:"Mørk chokolade",amount:0,unit:"",note:"valgfrit, til bunden"}],
+   steps:[
+     "Forvarm ovnen til 180° (varmluft 160°).",
+     "Bland kondenseret mælk, kokosmel og evt. vaniljesukker i en skål.",
+     "Rør godt rundt — massen skal være klistret, men stadig kunne formes.",
+     "Form små toppe med en ske eller hænderne, og sæt på bageplade med bagepapir.",
+     "Bag ca. 12-15 min til de er let gyldne på spidserne.",
+     "Afkøl på en bagerist.",
+     "Valgfrit: smelt mørk chokolade, dyp bunden af de afkølede toppe og lad størkne på bagepapir."],
+   tips:[
+     "Massen for våd til at forme? Lad den hvile 10 min så kokosen suger, eller rør en smule mere kokos i.",
+     "Hold øje de sidste minutter — spidserne brænder hurtigt."]},
+
+  {id:"roulade",group:"Kager & søde",navn:"Roulade m. abrikos",
+   desc:"Luftig bund, abrikosmarmelade og flødeskum. 1 plade = 2 halve roulader.",
+   yieldLabel:"Antal plader",baseYield:1,yieldUnit:"plade",yieldStep:1,yieldMin:1,yieldMax:6,
+   ingredients:[
+     {name:"Sukker",amount:250,unit:"g",note:"til bunden"},
+     {name:"Æg",amount:3,unit:"stk",round:"egg"},
+     {name:"Hvedemel",amount:125,unit:"g"},
+     {name:"Bagepulver",amount:1,unit:"tsk"},
+     {name:"Vaniljesukker",amount:2,unit:"tsk"},
+     {name:"Piskefløde",amount:350,unit:"ml",note:"ca. 3½ dl"},
+     {name:"Abrikosmarmelade",amount:200,unit:"ml",note:"ca. 2 dl"}],
+   steps:[
+     "Tænd ovnen på 160°.",
+     "Pisk sukker og æg godt og luftigt.",
+     "Vend mel, vaniljesukker og bagepulver i.",
+     "Hæld ud på en plade med bagepapir og bag ved 160° i 15 min.",
+     "Vend ud på sukkerdrysset bagepapir, hvil 10 min, læg så et fugtigt viskestykke over.",
+     "Når kagen er helt kold: smør abrikosmarmelade på og fordel flødeskum.",
+     "Rul sammen til roulade."],
+   tips:[
+     "Kan fryses. Tag ud ca. 2 timer før servering.",
+     "Det fugtige viskestykke holder bunden smidig, så den ikke knækker når du ruller.",
+     "Pisk fløden lige før brug og hold den kold — så ruller rouladen pænest."]},
+
+  {id:"havrekugler",group:"Madpakke",navn:"Havregrynskugler",
+   desc:"Ingen bagning. Røres, rulles, ind på køl. Børnevenlig version uden kaffe.",
+   yieldLabel:"Antal kugler",baseYield:25,yieldUnit:"stk",yieldStep:5,yieldMin:5,yieldMax:80,
+   ingredients:[
+     {name:"Havregryn",amount:150,unit:"g"},
+     {name:"Blødt smør",amount:100,unit:"g"},
+     {name:"Sukker",amount:75,unit:"g"},
+     {name:"Kakao",amount:25,unit:"g",note:"ca. 3 spsk"},
+     {name:"Vaniljesukker",amount:1,unit:"tsk"},
+     {name:"Kold kaffe el. mælk",amount:30,unit:"ml",note:"mælk = børnevenlig"},
+     {name:"Kokosmel",amount:50,unit:"g",note:"til rulning"}],
+   steps:[
+     "Rør blødt smør, sukker, kakao og vaniljesukker sammen til en ensartet masse.",
+     "Tilsæt havregryn og væsken (mælk eller kold kaffe). Rør godt.",
+     "Smager massen lidt løs? Stil den 10-15 min på køl så den bliver fastere.",
+     "Rul små kugler mellem hænderne.",
+     "Trill kuglerne i kokosmel.",
+     "Stil på køl mindst 30 min så de sætter sig."],
+   tips:[
+     "Til de voksne: byt mælken ud med kold, stærk kaffe — det giver lidt mere bid.",
+     "Holder en uges tid i køleskab i en tæt boks, og kan fryses.",
+     "Rul i flødebolle-krymmel eller hakkede mandler i stedet for kokos for variation."]},
+
+  {id:"rundstykker",group:"Brød",navn:"Rundstykker",
+   desc:"Koldhævet natten over for sprød skorpe og åben krumme. Lille smule gær, lang tid.",
+   yieldLabel:"Antal stykker",baseYield:10,yieldUnit:"stk",yieldStep:2,yieldMin:4,yieldMax:40,
+   ingredients:[
+     {name:"Hvedemel",amount:500,unit:"g"},
+     {name:"Vand",amount:325,unit:"g",note:"~65%, koldt"},
+     {name:"Salt",amount:10,unit:"g"},
+     {name:"Frisk gær",amount:5,unit:"g",note:"ca. ½ pakke — del 3 for tørgær"},
+     {name:"Olie el. smør",amount:15,unit:"g",note:"valgfrit, til en blødere krumme"}],
+   steps:[
+     "Rør gær ud i det kolde vand. Tilsæt mel, salt og evt. olie.",
+     "Ælt til en smidig dej (eller fold i skålen et par gange med 15 min mellemrum).",
+     "Tildæk og stil på køl natten over (8-14 timer).",
+     "Tag dejen ud om morgenen. Vend forsigtigt ud og del i emner uden at presse luften ud.",
+     "Form lette stykker og lad efterhæve ~45-60 min under et klæde.",
+     "Forvarm ovnen til 250° med en bageplade eller sten indeni.",
+     "Sæt et ovnfast fad med vand i bunden for damp. Bag stykkerne 12-15 min til gyldne og sprøde.",
+     "Afkøl på rist så bunden ikke bliver blød."],
+   tips:[
+     "Damp de første minutter giver den sprøde skorpe — vand i bunden eller en sprøjteflaske.",
+     "Pensl med vand og drys med birkes eller sesam før bagning for klassisk look.",
+     "Jo koldere dej i ovnen, jo bedre ovenspring — sæt dem direkte fra køl hvis du har travlt."]},
+
+  {id:"fdboller",group:"Brød",navn:"Fødselsdagsboller",
+   desc:"Bløde mælkeboller med smør og æg — søde, luftige, perfekte til smør og marmelade.",
+   yieldLabel:"Antal boller",baseYield:12,yieldUnit:"stk",yieldStep:2,yieldMin:4,yieldMax:40,
+   ingredients:[
+     {name:"Mælk",amount:250,unit:"ml",note:"lunken"},
+     {name:"Frisk gær",amount:25,unit:"g",note:"½ pakke — del 3 for tørgær"},
+     {name:"Smør",amount:50,unit:"g",note:"blødt"},
+     {name:"Æg",amount:1,unit:"stk",round:"egg"},
+     {name:"Sukker",amount:40,unit:"g",note:"ca. 3 spsk"},
+     {name:"Salt",amount:6,unit:"g",note:"1 tsk"},
+     {name:"Hvedemel",amount:500,unit:"g",note:"ca. — tilsæt til dejen slipper"},
+     {name:"Æg til pensling",amount:1,unit:"stk",round:"egg",note:"sammenpisket"}],
+   steps:[
+     "Lun mælken til den er fingervarm og rør gæren ud i den.",
+     "Tilsæt blødt smør, æg, sukker og salt. Rør rundt.",
+     "Tilsæt mel lidt ad gangen og ælt til en blød, smidig dej der lige slipper skålen.",
+     "Tildæk og lad hæve lunt ca. 45-60 min til dobbelt størrelse.",
+     "Slå dejen ned, del i emner og form runde boller.",
+     "Sæt på bageplade med god afstand, efterhæv 20-30 min under et klæde.",
+     "Pensl med sammenpisket æg.",
+     "Bag ved 220° i ca. 10-12 min til gyldne."],
+   tips:[
+     "Vil du lave dem dagen før? Lad dem koldhæve natten over og bag friske om morgenen.",
+     "Pensling med æg giver den blanke, gyldne overflade.",
+     "Bløde og luftige er nøglen — undgå for meget mel, dejen må gerne være let klæbende."]},
+
+  {id:"pandekager",group:"Madpakke",navn:"Pandekager",
+   desc:"Tynde danske pandekager. Lad gerne dejen hvile 30 min for de bedste.",
+   yieldLabel:"Antal pandekager",baseYield:10,yieldUnit:"stk",yieldStep:2,yieldMin:4,yieldMax:40,
+   ingredients:[
+     {name:"Hvedemel",amount:125,unit:"g"},
+     {name:"Mælk",amount:300,unit:"ml"},
+     {name:"Æg",amount:2,unit:"stk",round:"egg"},
+     {name:"Sukker",amount:15,unit:"g",note:"1 spsk"},
+     {name:"Salt",amount:1,unit:"knsp"},
+     {name:"Vaniljesukker",amount:1,unit:"tsk"},
+     {name:"Smør",amount:15,unit:"g",note:"smeltet, til dejen + stegning"}],
+   steps:[
+     "Pisk mel og halvdelen af mælken til en glat, klumpfri masse.",
+     "Pisk resten af mælken, æg, sukker, salt og vaniljesukker i.",
+     "Rør det smeltede smør i til sidst.",
+     "Lad dejen hvile ca. 30 min — gør pandekagerne mere møre.",
+     "Steg tynde pandekager på en varm, smurt pande, ca. 1 min på hver side.",
+     "Hold dem lune under et fad eller viskestykke til servering."],
+   tips:[
+     "For tynd eller tyk dej? Juster med en smule mælk eller mel — den skal flyde let ud på panden.",
+     "Hviletiden lader melet suge væsken, så pandekagerne ikke bliver gummiagtige.",
+     "Sprød kant: lad panden blive ordentlig varm før den første pandekage."]},
+
+  {id:"madpakkekage",group:"Madpakke",navn:"Madpakkekage",
+   desc:"Stinnas mættende madpakkekage uden mel — banan, kikærter, hytteost, havre og mørk chokolade. Alt blendes i én omgang.",
+   yieldLabel:"Antal stykker",baseYield:12,yieldUnit:"stk",yieldStep:2,yieldMin:4,yieldMax:36,
+   ingredients:[
+     {name:"Bananer",amount:240,unit:"g",note:"2 stk."},
+     {name:"Dadler uden sten",amount:100,unit:"g"},
+     {name:"Appelsinskal",amount:1,unit:"stk",note:"skallen af 1 appelsin"},
+     {name:"Appelsinsaft",amount:100,unit:"ml",note:"1 dl"},
+     {name:"Kogte kikærter",amount:240,unit:"g",note:"1 dåse, drænet"},
+     {name:"Bagepulver",amount:1,unit:"tsk"},
+     {name:"Salt",amount:1,unit:"drys"},
+     {name:"Peanutbutter",amount:2,unit:"spsk"},
+     {name:"Hytteost 4%",amount:100,unit:"g"},
+     {name:"Æg",amount:4,unit:"stk",round:"egg"},
+     {name:"Havregryn",amount:100,unit:"g"},
+     {name:"Honning",amount:1,unit:"spsk"},
+     {name:"Mørk chokolade 85%",amount:100,unit:"g",note:"grofthakket"}],
+   steps:[
+     "Tænd ovnen på 200° varmluft.",
+     "Kom alle ingredienser undtagen chokoladen i en blender eller foodprocessor og blend til en jævn dej.",
+     "Vend den grofthakkede chokolade i.",
+     "Hæld dejen i en metalform (ca. 20×20 cm) beklædt med bagepapir.",
+     "Bag midt i ovnen ca. 30 min — til gylden og der ikke hænger dej ved en kødnål.",
+     "Lad kagen køle helt af før den skæres i stykker.",
+     "Opbevar i køleskab eller frys ned i mindre stykker."],
+   tips:[
+     "Uden hvedemel — fylden kommer fra havre, kikærter, banan og dadler.",
+     "Holder flere dage i køleskab og kan fryses i portioner til travle morgener.",
+     "Ikke kraftig nok foodprocessor? Blend ingredienserne i et par hold."]},
+
+  {id:"sarah",group:"Kager & søde",navn:"Sarah Bernhard",
+   desc:"Makronbund med chokoladetop. Vælg din lette version eller den klassiske.",
+   yieldLabel:"Antal kager",baseYield:12,yieldUnit:"stk",yieldStep:4,yieldMin:4,yieldMax:48,
+   options:[{id:"ver",label:"Version",choices:[
+     {v:"let",t:"Let (chokolade-flødeskum)",sel:true},
+     {v:"klassisk",t:"Klassisk (mousse + overtræk)"}]}],
+   dynamic:"sarah"},
+
+  {id:"kanelsnegle",group:"Kager & søde",navn:"Kanelsnegle",
+   desc:"Stinnas snaskede kanelsnegle bagt i fad — masser af remonce, bløde og saftige.",
+   yieldLabel:"Antal snegle",baseYield:18,yieldUnit:"stk",yieldStep:2,yieldMin:6,yieldMax:54,
+   ingredients:[
+     {name:"— Dej —",amount:0,unit:""},
+     {name:"Frisk gær",amount:50,unit:"g",note:"20-25 g er rigeligt iflg. kommentarer"},
+     {name:"Lunken sødmælk",amount:200,unit:"ml",note:"2 dl"},
+     {name:"Sukker",amount:50,unit:"g"},
+     {name:"Salt",amount:4,unit:"g",note:"1 lille tsk"},
+     {name:"Æg",amount:2,unit:"stk",round:"egg"},
+     {name:"Kardemomme",amount:1,unit:"tsk"},
+     {name:"Hvedemel",amount:535,unit:"g",note:"520-550 g, evt. mere"},
+     {name:"Blødt smør",amount:100,unit:"g"},
+     {name:"— Remonce-fyld —",amount:0,unit:""},
+     {name:"Blødt smør",amount:200,unit:"g"},
+     {name:"Brun farin",amount:200,unit:"g"},
+     {name:"Kanel",amount:2,unit:"spsk"},
+     {name:"— Pensling —",amount:0,unit:""},
+     {name:"Sammenpisket æg",amount:1,unit:"stk",round:"egg"}],
+   steps:[
+     "Lun mælken til lillefingervarm. Rør gæren ud i den.",
+     "Tilsæt sukker, salt, æg og kardemomme. Rør sammen.",
+     "Tilsæt mel og ælt. Tilsæt så smørret i mindre stykker.",
+     "Ælt dejen godt til den er glat og smidig — den må gerne være en smule klistret, ikke tør.",
+     "Lad hæve under et fugtigt klæde 1,5 time et lunt sted.",
+     "Remonce: rør blødt smør, brun farin og kanel godt sammen med en gaffel.",
+     "Rul dejen tyndt ud til et rektangel på et let meldrysset bord (ikke for meget mel).",
+     "Smør remoncen på og fordel den. Rul sammen og skær stykker på 2-3 cm.",
+     "Sæt i fad med bagepapir, 1,5-2 cm mellem hver. Efterhæv 40-45 min under fugtigt klæde.",
+     "Tænd ovnen på 200° (alm. over-/undervarme). Pensl med sammenpisket æg.",
+     "Bag midt i ovnen 15-20 min til gyldne. Hold øje — der er forskel på ovne."],
+   tips:[
+     "Hemmeligheden mod tørre snegle: spar på melet i dejen og vær gavmild med remoncen.",
+     "Vil du koldhæve til næste dag? Brug halv gær og stil dem på køl natten over.",
+     "Bag i fad — så bliver remoncen i sneglene i stedet for at flyde ud.",
+     "Hæver de op i midten? Dyp fingrene i æggevasken og tryk midten ned før bagning.",
+     "Kan fryses færdigbagte og lunes — så er de som nybagte."]},
+
+  {id:"brunsviger",group:"Kager & søde",navn:"Brunsviger",
+   desc:"Klassisk fynsk brunsviger — blød gærdejsbund med boblende brun farin-remonce.",
+   yieldLabel:"Antal plader",baseYield:1,yieldUnit:"plade",yieldStep:1,yieldMin:1,yieldMax:4,
+   ingredients:[
+     {name:"— Bund —",amount:0,unit:""},
+     {name:"Frisk gær",amount:25,unit:"g",note:"½ pakke — del 3 for tørgær"},
+     {name:"Lunken mælk",amount:250,unit:"ml"},
+     {name:"Sukker",amount:50,unit:"g"},
+     {name:"Salt",amount:4,unit:"g",note:"½ tsk"},
+     {name:"Smeltet smør",amount:50,unit:"g"},
+     {name:"Æg",amount:1,unit:"stk",round:"egg"},
+     {name:"Hvedemel",amount:400,unit:"g",note:"ca. — til dejen slipper"},
+     {name:"— Remonce —",amount:0,unit:""},
+     {name:"Smør",amount:150,unit:"g"},
+     {name:"Brun farin",amount:250,unit:"g"},
+     {name:"Lys sirup",amount:2,unit:"spsk",note:"valgfrit, gør den ekstra blød"}],
+   steps:[
+     "Rør gæren ud i den lune mælk. Tilsæt sukker, salt, smeltet smør og æg.",
+     "Tilsæt mel lidt ad gangen og ælt til en blød, smidig dej.",
+     "Lad hæve lunt ca. 45 min til dobbelt størrelse.",
+     "Tryk dejen ud i en smurt bradepande (ca. 30×40 cm) og lad efterhæve 20-30 min.",
+     "Remonce: smelt smør, brun farin og evt. sirup sammen i en gryde til en jævn masse.",
+     "Lav fordybninger i dejen med fingrene og hæld remoncen jævnt ud over.",
+     "Bag ved 200° i ca. 12-15 min til remoncen bobler og bunden er gennembagt.",
+     "Lad køle en smule — remoncen er meget varm. Spis lun."],
+   tips:[
+     "Remoncen skal boble op og lægge sig i fordybningerne — det er det der gør en brunsviger.",
+     "Lidt sirup i remoncen holder den blød og blank efter afkøling.",
+     "Bedst lun og frisk samme dag, men kan lunes igen i ovnen."]},
+];
+
+/* ---- state + favorites ---- */
+const LS_FAV="smovs.favs";
+let favs=[];
+try{favs=JSON.parse(localStorage.getItem(LS_FAV))||[]}catch(e){favs=[]}
+function saveFavs(){try{localStorage.setItem(LS_FAV,JSON.stringify(favs))}catch(e){}}
+
+/* ---- kalorie-database: kcal pr. 100 g (vejledende) ---- */
+const KCAL={ // pr. 100 g
+  "caputo cuoco":350,"hvedemel":350,"mel":350,"fintmalet fuldkornsmel":340,
+  "vand":0,"mælk":47,"sødmælk":63,"lunken sødmælk":63,"lunken mælk":47,"mælkeprodukt":60,
+  "øl":43,"appelsinsaft":45,
+  "salt":0,"havsalt":0,"bagepulver":0,"vaniljesukker":390,"kardemomme":0,"oregano":0,"kanel":260,
+  "tørret oregano":0,"frisk basilikum":0,"hvidløg":150,"appelsinskal":0,
+  "sukker":400,"rørsukker":400,"brun farin":380,"flormelis":400,"honning":300,"lys sirup":300,
+  "smør":740,"blødt smør":740,"smeltet smør":740,"olie el. smør":800,"god olivenolie":880,
+  "olivenolie":880,"kokosfedt el. lidt olie":880,"kokosfedt":900,
+  "æg":143,"æg til pensling":143,"sammenpisket æg":143,"æggeblommer":320,"æggehvider":52,
+  "havregryn":370,
+  "piskefløde":340,"fløde":340,
+  "mørk chokolade":550,"mørk chokolade 85%":600,"chokolade":540,
+  "makroner":420,"knuste makroner":420,"mandelessens":0,
+  "kondenseret mælk":320,"sød kondenseret mælk":320,
+  "kokosmel":660,
+  "abrikosmarmelade":250,"marmelade":250,
+  "kakao":230,"kold kaffe el. mælk":20,
+  "bananer":89,"banan":89,"dadler uden sten":280,"kogte kikærter":120,"kikærter":120,
+  "peanutbutter":590,"hytteost 4%":100,"hytteost":100,
+  "frisk gær":105,"tørgær":325,"gær":105,
+  "hakkede tomater":32,
+};
+// per-piece gram weights for "stk" ingredients not weighed
+const PIECE_G={"æg":55,"æg til pensling":55,"sammenpisket æg":55,"æggeblommer":18,"æggehvider":33,
+  "bananer":120,"banan":120,"appelsinskal":2,"hvidløg":5,"makroner":8};
+// spoon/unit conversions to grams
+const UNIT_G={tsk:5,spsk:15,knsp:0.5,drys:0.5,fed:5,blade:0.5,pinch:0.5};
+
+function kcalLookup(name){
+  const n=name.toLowerCase().trim();
+  if(KCAL[n]!=null)return KCAL[n];
+  // try partial match
+  for(const k in KCAL){ if(n.includes(k))return KCAL[k]; }
+  return null;
+}
+function ingredientGrams(i){
+  // returns grams for an ingredient given amount+unit, or null if unknown
+  const u=(i.unit||"").toLowerCase();
+  if(u==="g")return i.amount;
+  if(u==="ml")return i.amount; // approx 1 g/ml
+  if(u==="stk"||u===""){ const pg=PIECE_G[(i.name||"").toLowerCase().trim()]; return pg?i.amount*pg:null; }
+  if(UNIT_G[u]!=null)return i.amount*UNIT_G[u];
+  return null;
+}
+function computeKcal(ingredients, pieces){
+  let total=0, totalG=0, known=true;
+  ingredients.forEach(i=>{
+    if(typeof i.name==="string" && i.name.startsWith("—"))return; // skip section headers
+    const g=ingredientGrams(i);
+    const k=kcalLookup(i.name);
+    if(g==null||k==null){ if(i.amount>0)known=false; return; }
+    total+=g*k/100; totalG+=g;
+  });
+  if(totalG<=0)return null;
+  return {kcal:total, grams:totalG, per100:total/totalG*100,
+    perPiece:pieces>0?total/pieces:null, known};
+}
+
+const CATEGORIES=["Alle","Pizza","Brød","Kager & søde","Madpakke"];
+let state={recipe:RECIPES[0].id,yields:{},opts:{},pizzaType:"napoli",hyd:{},ball:{},sauceCans:1,cat:"Alle"};
+RECIPES.forEach(r=>{
+  state.yields[r.id]=r.baseYield;state.opts[r.id]={};
+  (r.options||[]).forEach(o=>{const def=o.choices.find(c=>c.sel)||o.choices[0];state.opts[r.id][o.id]=def.v;});
+});
+Object.keys(PIZZA_TYPES).forEach(k=>{state.hyd[k]=PIZZA_TYPES[k].defHyd;state.ball[k]=PIZZA_TYPES[k].ball;});
+
+/* ---- helpers ---- */
+function fmt(n){
+  if(n===0)return "0";
+  if(n<1)return (Math.round(n*100)/100).toString().replace(".",",");
+  if(n<10)return (Math.round(n*10)/10).toString().replace(".",",");
+  return Math.round(n).toString();
+}
+function fmtEgg(n){return Math.max(1,Math.round(n)).toString();}
+
+function sauceModel(cans){
+  const n=Math.max(1,Math.min(8,cans));
+  return {
+    ingredients:[
+      {name:"Hakkede tomater",amount:400*n,unit:"g",note:n+" dåse"+(n>1?"r":"")+", Mutti el. San Marzano"},
+      {name:"God olivenolie",amount:3*n,unit:"tsk"},
+      {name:"Havsalt",amount:0.25*n,unit:"tsk",note:"smag til"},
+      {name:"Tørret oregano",amount:1*n,unit:"knsp",note:"2-3 fingerspidser"},
+      {name:"Frisk basilikum",amount:3*n,unit:"blade",note:"revet i stykker"},
+      {name:"Hvidløg",amount:1*n,unit:"fed",note:"valgfrit"}],
+    steps:[
+      "Bland alle ingredienser i en skål og rør godt sammen.",
+      "Smag til med havsalt.",
+      "Ønsker du en mere jævn sauce: kør den kort med en blender.",
+      "Brug straks eller opbevar i køleskab."],
+    tips:[
+      "En autentisk pizzasauce koges ikke — den får sin friskhed af de rå tomater.",
+      "Flåede tomater i stedet? Dræn dem og knus med hænderne.",
+      "Holder ~3 dage i køleskab og kan fryses i op til en måned.",
+      "Ca. 1 dåse rækker til 3-4 pizzaer."],
+  };
+}
+
+function sarahModel(qty,opts){
+  const scale=qty/12;
+  const klassisk=opts.ver==="klassisk";
+  let ingredients,steps,tips;
+  if(klassisk){
+    ingredients=[
+      {name:"Makroner",amount:12,unit:"stk",note:"bunde — eller hjemmebagte"},
+      {name:"Mørk chokolade",amount:200,unit:"g",note:"til mousse + overtræk"},
+      {name:"Piskefløde",amount:200,unit:"ml"},
+      {name:"Æggeblommer",amount:2,unit:"stk",round:"egg"},
+      {name:"Flormelis",amount:30,unit:"g"},
+      {name:"Kokosfedt el. lidt olie",amount:20,unit:"g",note:"til blank overtræk"}];
+    steps=[
+      "Mousse: smelt 100 g chokolade forsigtigt og lad lune lidt af.",
+      "Pisk fløden til let skum. Pisk æggeblommer og flormelis luftigt.",
+      "Vend chokolade i æggemassen, vend så fløden i. Stil koldt 30 min.",
+      "Sprøjt en høj top mousse på hver makron. Frys 15-20 min så de er faste.",
+      "Overtræk: smelt 100 g chokolade med kokosfedt til den er blank og flydende.",
+      "Dyp toppen af hver kage i chokoladen så moussen dækkes. Lad størkne."];
+    tips:[
+      "Frysning før dypning holder formen, så moussen ikke smelter ud i overtrækket.",
+      "Tilsæt en dråbe Cointreau eller stærk kaffe i moussen for en voksen-version.",
+      "Kan fryses færdige — tag ud ~30 min før servering."];
+  }else{
+    ingredients=[
+      {name:"Makroner",amount:12,unit:"stk",note:"købte bunde"},
+      {name:"Mørk chokolade",amount:150,unit:"g"},
+      {name:"Piskefløde",amount:250,unit:"ml"}];
+    steps=[
+      "Hak chokoladen fint og kom den i en skål.",
+      "Varm halvdelen af fløden op til lige under kogepunktet og hæld over chokoladen. Rør til en blank ganache. Køl 20-30 min.",
+      "Pisk resten af fløden til skum og vend den i den afkølede ganache — så bliver det luftigt chokolade-flødeskum.",
+      "Sprøjt eller skeer en top på hver makron.",
+      "Stil koldt til de er faste. Spis kølige."];
+    tips:[
+      "Den lette version: ingen æg, ingen overtræk — bare makron + luftigt chokolade-flødeskum.",
+      "Vil du have lidt fastere top? Brug lidt mere chokolade i ganachen.",
+      "Drys med kakao eller revet chokolade lige før servering."];
+  }
+  ingredients=ingredients.map(i=>({...i,amount:i.amount*scale}));
+  return {ingredients,steps,tips};
+}
+
+function pizzaModel(qty,opts){
+  const t=PIZZA_TYPES[state.pizzaType];
+  let ball=parseInt(state.ball[state.pizzaType]);
+  if(isNaN(ball))ball=t.ball;
+  ball=Math.max(120,Math.min(400,ball));
+  let hyd=parseFloat(state.hyd[state.pizzaType]);
+  if(isNaN(hyd))hyd=t.defHyd;
+  hyd=Math.max(50,Math.min(90,hyd));
+  const h=hyd/100, totalDough=qty*ball, saltPct=0.03;
+  const flour=totalDough/(1+h+saltPct), water=flour*h, salt=flour*saltPct;
+  const plan=opts.plan;
+  let yeastPct,planText,timeline;
+  if(plan==="same"){
+    yeastPct=0.007;planText="Samme dag · 6-8 t ved stuetemperatur";
+    timeline=[["Morgen","Ælt dej, autolyse 20 min, ælt færdig."],
+      ["+1 t","Bulk-hævning, stram op og bal i emner."],
+      ["Eftermiddag","Kuglerne hæver til de er bløde og pufget."],
+      ["Aften","Åbn, top og bag."]];
+  }else if(plan==="cold24"){
+    yeastPct=0.002;planText="Koldhævning ~24 t · mest på køl";
+    timeline=[["Aften dag 1","Ælt, hvil, stram op, bal i kugler, direkte på køl."],
+      ["Middag dag 2","Tag kuglerne ud — stå urørt ved ~20°."],
+      ["3-5 t senere","Klar når bløde, hævet og flyder let ud."],
+      ["Aften dag 2","Åbn forsigtigt fra midten, top og bag."]];
+  }else if(plan==="cold48"){
+    yeastPct=0.0012;planText="Koldhævning ~48 t · dyb smag";
+    timeline=[["Dag 1","Ælt, stram op, bal i kugler, på køl."],
+      ["Dag 2","Bliv på køl — tjek at de ikke overhæver."],
+      ["Dag 3 middag","Tag ud, temperér ved ~20° i 3-5 t."],
+      ["Dag 3 aften","Åbn, top og bag."]];
+  }else if(plan==="poolish"){
+    // Bagerkokkens poolish — 48 t, form direkte fra køl
+    yeastPct=0.0015;planText="Bagerkokkens Poolish · 48 t (form direkte fra køl)";
+    timeline=[["Dag 1","Bland poolish (mel + vand + tørgær). Hvil 1 t ude."],
+      ["+1 t","På køl 20-24 t (1. fermentering)."],
+      ["Dag 2","Poolish ud, 1 t ude. Ælt hoveddej, bulk 1 t, bal i kugler."],
+      ["+balling","Kugler i hævekasse, 24 t på køl (2. fermentering)."],
+      ["Dag 3","Form DIREKTE fra køl. Launch på gennemvarm sten."]];
+  }else if(plan==="vito"){
+    yeastPct=0.005;planText="Vitos Poolish · honning + olie (3 dage)";
+    timeline=[["Dag 1","Poolish: vand + mel + gær + honning. 1 t ude, så 16-24 t på køl."],
+      ["Dag 2","Al poolish + vand + mel + salt + olie. Ælt, så 16-24 t på køl."],
+      ["Dag 3","Dej ud, vent 1-2 t, form kugler."],
+      ["+2-4 t","Kuglerne hæver ved stuetemp (typisk 2 t ved 25°)."],
+      ["Klar","Forvarm ovnen på max, åbn og bag."]];
+  }else if(plan==="biga1"){
+    yeastPct=0.0022;planText="Biga v1 · køl 24 t (god om sommeren)";
+    timeline=[["Dag 1","Bland biga (mel + vand + tørgær) uden at ælte."],
+      ["+30-60 min","Stuetemperatur i lufttæt beholder, derefter ~24 t på køl."],
+      ["Dag 2","Biga fra køl + vand + salt. Ælt blank. Hold hoveddej under 20°."],
+      ["+2-4 t","Bulk, bal i kugler, kort efterhæv."],
+      ["Aften","Åbn, top og bag."]];
+  }else{
+    yeastPct=0.0008;planText="Biga v2 · stuetemp 24 t (når lokalet ikke er for varmt)";
+    timeline=[["Dag 1","Bland biga (mel + vand + frisk gær) uden at ælte."],
+      ["~24 t","Står overdækket ved stuetemperatur."],
+      ["Dag 2","Biga + vand lidt ad gangen + salt. Ælt 6-9 min. Hold under 20°."],
+      ["+2-4 t","Hvil, bal i kugler, kort efterhæv."],
+      ["Aften","Åbn, top og bag."]];
+  }
+  const yeastFresh=flour*yeastPct;
+  const isDry=opts.yeast==="dry";
+  const yeast=isDry?yeastFresh/3:yeastFresh;
+  const yeastName=isDry?"Tørgær":"Frisk gær";
+  const yeastNote=isDry?"⅓ af frisk gær":"eller del 3 for tørgær";
+
+  // forferment plans: split flour/water/yeast into preferment + main dough
+  const preferments={
+    poolish:{label:"Poolish",flourPct:0.193,prefHyd:1.00,yeastInPref:1.0,
+      hovedNote:"resten + salt"},
+    vito:{label:"Vito-poolish",flourPct:0.30,prefHyd:1.00,yeastInPref:1.0,honey:true,oil:true,
+      hovedNote:"resten + salt + olie"},
+    biga1:{label:"Biga v1",flourPct:0.50,prefHyd:0.50,yeastInPref:1.0,
+      hovedNote:"resten + salt"},
+    biga2:{label:"Biga v2",flourPct:1.00,prefHyd:0.45,yeastInPref:1.0,
+      hovedNote:"kun vand + salt"},
+  };
+  const pf=preferments[plan];
+
+  let ingredients, steps, tips;
+  const baseTips=[
+    "Skift mellem tørgær og frisk gær med Gær-knappen — tallet regnes om automatisk (tørgær = ⅓ af frisk).",
+    "Trækker kuglen sig sammen? Den er ikke afslappet nok — giv den tid, ikke kraft. Undgå at stramme op igen efter koldhævning.",
+    "Klistret dej lige efter æltning er normalt ved 65%+. Lad den hvile og fold et par gange i stedet for at tilsætte mel."];
+
+  if(pf){
+    // split
+    const prefFlour=flour*pf.flourPct;
+    const prefWater=prefFlour*pf.prefHyd;
+    const prefYeast=yeast*pf.yeastInPref;
+    const mainFlour=flour-prefFlour;
+    const mainWater=water-prefWater;
+    const honey=pf.honey?flour*0.005:0;   // ~5 g pr. 1000 g mel
+    const oil=pf.oil?flour*0.01:0;         // ~10 g pr. 1000 g mel
+    ingredients=[
+      {name:"— "+pf.label+" —",amount:0,unit:"",note:"forferment, dag 1"},
+      {name:"Mel i "+pf.label.toLowerCase(),amount:prefFlour,unit:"g"},
+      {name:"Vand i "+pf.label.toLowerCase(),amount:prefWater,unit:"g",note:Math.round(pf.prefHyd*100)+"% i forfermenten"},
+      {name:yeastName,amount:prefYeast,unit:"g",note:yeastNote},
+      ...(honey>0?[{name:"Honning",amount:honey,unit:"g",note:"fodrer gæren"}]:[]),
+      {name:"— Hoveddej —",amount:0,unit:"",note:"dag 2"},
+      ...(mainFlour>0.5?[{name:"Mel",amount:mainFlour,unit:"g"}]:[]),
+      ...(mainWater>0.5?[{name:"Vand",amount:mainWater,unit:"g",note:"koldest fra hanen"}]:[]),
+      {name:"Salt",amount:salt,unit:"g",note:"3% af mel"},
+      ...(oil>0?[{name:"Olivenolie",amount:oil,unit:"g"}]:[]),
+    ];
+    if(plan==="vito"){
+      steps=[
+        "Dag 1 – Poolish: bland vand, mel, gær og honning. Rør sammen til en grød.",
+        "Hold 1 time ved stuetemperatur så gæren aktiveres.",
+        "Sæt poolishen på køl 16-24 timer.",
+        "Dag 2 – Hoveddej: tilsæt al poolish, vand, mel, salt og olivenolie.",
+        "Bland/ælt det hele sammen til en smidig dej.",
+        "Kom i en skål med låg og stil på køl 16-24 timer.",
+        "Dag 3 – Kugler: tag dejen ud, vent 1-2 timer, form til kugler.",
+        "Lad kuglerne hæve 2-4 timer ved stuetemperatur (typisk 2 t ved 25°).",
+        "Forvarm ovnen på max. Åbn forsigtigt og bag den bedste pizza derhjemme.",
+        t.bakeText];
+    }else if(plan==="poolish"){
+      steps=[
+        "Dag 1 – Poolish: vend tørgæren i poolish-melet og tilsæt vandet (25-27° ved tørgær).",
+        "Rør/ælt godt sammen i hånden eller på maskine.",
+        "Lad poolishen hæve i lukket beholder 1 time ved stuetemperatur.",
+        "Sæt poolishen på køl 20-24 timer (1. fermentering).",
+        "Dag 2: tag poolishen ud og lad den stå 1 time ved stuetemperatur.",
+        "Tilsæt vand, poolish og mel. Ælt 5 min ved lav hastighed.",
+        "Hvil dejen i skålen 10 min. Tilsæt salt og ælt 5 min mere ved mellem hastighed — dejen er klar når den er blank og glat (\u201dskær\u201d).",
+        "Bulkhæv 1 time ved stuetemperatur i en olieret skål.",
+        "Del i emner à "+ball+" g og stram op til kugler ved at folde oversiden ind i bunden.",
+        "Læg i hævekasse og sæt på køl ca. 24 timer (2. fermentering).",
+        "Dag 3: form til pizza DIREKTE fra køl — kold dej springer bedst.",
+        t.bakeText];
+    }else if(plan==="biga1"){
+      steps=[
+        "Dag 1 – Biga: vend gæren i melet, tilsæt vandet. Kør fingrene gennem blandingen uden at ælte til alt melet er optaget.",
+        "Læg bigaen i lufttæt beholder ved stuetemperatur 30-60 min.",
+        "Sæt herefter på køl ca. 24 timer.",
+        "Dag 2 – Hoveddej: tag bigaen direkte fra køl, kom den i røreskålen og tilsæt vandet.",
+        "Tilsæt salt og ælt til dejen er blank og smidig. Hold hoveddejen under 20°.",
+        "Hvil, del i emner à "+ball+" g, form kugler og kort efterhæv.",
+        "Åbn fra midten — pres luften mod kanten.",
+        t.bakeText];
+    }else{
+      steps=[
+        "Dag 1 – Biga: opløs gæren i vandet, tilsæt melet. Kør fingrene gennem blandingen uden at ælte til alt melet er optaget.",
+        "Lad bigaen stå overdækket ved stuetemperatur ca. 24 timer.",
+        "Dag 2 – Hoveddej: hæld bigaen i røremaskinen og tilsæt vandet lidt efter lidt under omrøring.",
+        "Tilsæt salt. Ælt 6-9 min ved laveste hastighed. Hold hoveddejen under 20°.",
+        "Lad hvile 20-25 min, del i emner à "+ball+" g og form kugler.",
+        "Kort efterhæv, åbn fra midten.",
+        t.bakeText];
+    }
+    tips=[
+      "Forfermenten er regnet ind: mel, vand og gær er allerede delt mellem "+pf.label.toLowerCase()+" og hoveddej.",
+      ...(plan==="poolish"?["Form pizzaen DIREKTE fra køl — kold, spændt dej springer vildere op end varm, afslappet dej."]:
+         plan==="vito"?["Honningen fodrer gæren i poolishen og giver smag og farve. Olien kommer i hoveddejen."]:
+         ["Vand i hoveddejen skal være det koldeste fra hanen — hoveddejen bør ikke overstige 20°."]),
+      "Sørg for at stenen er gennemvarm (45-60 min) — bundvarmen giver springet nedefra.",
+      ...baseTips.slice(1,2)];
+  }else{
+    ingredients=[
+      {name:"Caputo Cuoco \u201c00\u201d",amount:flour,unit:"g"},
+      {name:"Vand",amount:water,unit:"g",note:Math.round(hyd)+"% hydration"},
+      {name:"Salt",amount:salt,unit:"g",note:"3% af mel"},
+      {name:yeastName,amount:yeast,unit:"g",note:yeastNote}];
+    steps=[
+      "Opløs gæren i vandet. Bland melet i og lad hvile 20 min (autolyse).",
+      "Tilsæt salt. Ælt til glat, smidig dej.",
+      "Lad hvile, stram op og del i emner à "+ball+" g.",
+      "Form stramme kugler — træk dejen ned under sig selv.",
+      "Hæv efter planen herover.",
+      "Temperér kuglerne helt igennem før du åbner dem.",
+      "Åbn fra midten med fingerspidser — pres luften mod kanten, træk ikke.",
+      "Møder du modstand: vent 5-10 min, så åbner den villigt resten.",
+      t.bakeText];
+    tips=baseTips;
+  }
+
+  return {
+    ingredients,
+    totals:[{name:"Dej i alt",amount:totalDough,unit:"g"},{name:"Pr. emne",amount:ball,unit:"g"}],
+    planText,timeline,steps,tips
+  };
+}
+
+/* ---- render (split to avoid input jumping) ---- */
+const favband=document.getElementById("favband");
+const catbar=document.getElementById("catbar");
+const picker=document.getElementById("picker");
+const card=document.getElementById("card");
+
+function renderCatbar(){
+  catbar.innerHTML=CATEGORIES.map(c=>`
+    <button class="cat" role="tab" aria-selected="${state.cat===c}" data-cat="${c}">${c}</button>`).join("");
+  catbar.querySelectorAll("[data-cat]").forEach(b=>{
+    b.onclick=()=>{state.cat=b.dataset.cat;renderCatbar();renderPicker();};
+  });
+}
+
+function isFav(id){return favs.includes(id)}
+function toggleFav(id){
+  if(isFav(id))favs=favs.filter(x=>x!==id);else favs.push(id);
+  saveFavs();renderFavband();renderPicker();
+  const btn=document.getElementById("favbtn");
+  if(btn)btn.setAttribute("aria-pressed",isFav(state.recipe)?"true":"false");
+}
+
+function renderFavband(){
+  if(!favs.length){
+    favband.innerHTML=`<div class="favlabel"><span class="star">\u2605</span> Favoritter</div>
+      <div class="favrow"><span class="empty">Tryk på stjernen ved en opskrift for at samle dine favoritter her.</span></div>`;
+    return;
+  }
+  const items=favs.map(id=>RECIPES.find(r=>r.id===id)).filter(Boolean);
+  favband.innerHTML=`<div class="favlabel"><span class="star">\u2605</span> Favoritter</div>
+    <div class="favrow">${items.map(r=>`
+      <button class="chip fav" role="tab" aria-selected="${state.recipe===r.id}" data-fav="${r.id}">
+        <span class="star">\u2605</span>${r.navn}</button>`).join("")}</div>`;
+  favband.querySelectorAll("[data-fav]").forEach(b=>{
+    b.onclick=()=>{state.recipe=b.dataset.fav;renderAll();};
+  });
+}
+
+function renderPicker(){
+  const list=state.cat==="Alle"?RECIPES:RECIPES.filter(r=>r.group===state.cat);
+  picker.innerHTML=list.map(r=>`
+    <button class="chip" role="tab" aria-selected="${state.recipe===r.id}" data-rid="${r.id}">
+      ${isFav(r.id)?'<span class="star" style="color:var(--gold)">\u2605</span>':''}${r.navn}
+    </button>`).join("");
+  picker.querySelectorAll("[data-rid]").forEach(b=>{
+    b.onclick=()=>{state.recipe=b.dataset.rid;renderAll();};
+  });
+}
+
+function buildIngredientRows(ingredients){
+  return ingredients.map(i=>{
+    const isHeader=typeof i.name==="string" && i.name.startsWith("—");
+    if(isHeader){
+      const label=i.name.replace(/—/g,"").trim();
+      return `<tr class="ingsec"><th colspan="3">${label}${i.note?` <span class="note-inline">· ${i.note}</span>`:""}</th></tr>`;
+    }
+    const isEgg=i.round==="egg", hasAmt=i.amount&&i.amount>0;
+    const val=!hasAmt?"\u2014":(isEgg?fmtEgg(i.amount):fmt(i.amount));
+    return `<tr><th>${i.name}${i.note?`<div class="note-inline">${i.note}</div>`:""}</th>
+      <td class="amt">${val}</td><td class="u">${hasAmt?i.unit:""}</td></tr>`;
+  }).join("");
+}
+
+function refreshData(){
+  const r=RECIPES.find(x=>x.id===state.recipe);
+  const qty=state.yields[r.id],opts=state.opts[r.id],scale=qty/r.baseYield;
+  let ingredients,totals=null,steps=r.steps,tips=r.tips||[],planText=null,timeline=null;
+  if(r.dynamic==="pizza"){
+    if(state.pizzaType==="sauce"){
+      const m=sauceModel(state.sauceCans);
+      ingredients=m.ingredients;steps=m.steps;tips=m.tips;
+    }else{
+      const m=pizzaModel(qty,opts);
+      ingredients=m.ingredients;totals=m.totals;steps=m.steps;tips=m.tips;planText=m.planText;timeline=m.timeline;
+    }
+  }else if(r.dynamic==="sarah"){
+    const m=sarahModel(qty,opts);
+    ingredients=m.ingredients;steps=m.steps;tips=m.tips;
+  }else{
+    ingredients=r.ingredients.map(i=>({...i,amount:i.amount*scale}));
+  }
+  const totalRows=totals?totals.map((t,idx)=>`
+    <tr class="${idx===0?'tot':''}"><th>${t.name}</th>
+      <td class="amt">${fmt(t.amount)}</td><td class="u">${t.unit}</td></tr>`).join(""):"";
+  document.getElementById("ingbody").innerHTML=buildIngredientRows(ingredients)+totalRows;
+
+  // kalorier
+  let pieces=0;
+  if(r.dynamic==="pizza" && state.pizzaType!=="sauce") pieces=qty;
+  else if(r.dynamic==="pizza" && state.pizzaType==="sauce") pieces=0;
+  else if(r.yieldUnit==="stk") pieces=qty;
+  const kc=computeKcal(ingredients,pieces);
+  const kbox=document.getElementById("kcalbox");
+  if(kc){
+    const approx=kc.known?"":" ~"; // tilde hvis nogle ingredienser mangler data
+    let line=`<span class="kcal-main">${Math.round(kc.per100)}${approx} kcal</span> <span class="kcal-sub">pr. 100 g</span>`;
+    if(kc.perPiece) line+=`<span class="kcal-sep">·</span><span class="kcal-main">${Math.round(kc.perPiece)}${approx} kcal</span> <span class="kcal-sub">pr. stk.</span>`;
+    kbox.innerHTML=`<div class="kcal">${line}<div class="kcal-note">Vejledende — beregnet ud fra ingrediensernes vægt${kc.known?"":". Nogle ingredienser mangler data, så tallet er et skøn"}.</div></div>`;
+  }else{
+    kbox.innerHTML="";
+  }
+
+  document.getElementById("tlbox").innerHTML=planText?`
+    <div class="timeline"><b>${planText}</b><div style="margin-top:10px">
+    ${timeline.map(t=>`<div class="tl-row"><span class="tl-when">${t[0]}</span><span>${t[1]}</span></div>`).join("")}
+    </div></div>`:"";
+  document.getElementById("stepbox").innerHTML=steps.map(s=>`<li>${s}</li>`).join("");
+  document.getElementById("tipbox").innerHTML=tips.map(t=>`<div class="tip">${t}</div>`).join("");
+}
+
+function renderCard(){
+  const r=RECIPES.find(x=>x.id===state.recipe);
+  const qty=state.yields[r.id],opts=state.opts[r.id];
+  const isPizza=r.dynamic==="pizza";
+  const isSauce=isPizza && state.pizzaType==="sauce";
+
+  let subHtml="";
+  if(isPizza){
+    subHtml=`<div class="subtabs" role="tablist" aria-label="Pizzatype">
+      ${Object.entries(PIZZA_TYPES).map(([k,t])=>`
+        <button class="subtab" role="tab" aria-selected="${state.pizzaType===k}" data-ptype="${k}">${t.navn}</button>`).join("")}
+    </div>`;
+  }
+  const desc=isPizza?PIZZA_TYPES[state.pizzaType].blurb:r.desc;
+
+  let optHtml="";
+  if(!isSauce){
+    (r.options||[]).forEach(o=>{
+      const cur=opts[o.id];
+      optHtml+=`<div class="ctrl"><label>${o.label}</label>
+        <select class="sel" data-opt="${o.id}">
+          ${o.choices.map(c=>`<option value="${c.v}" ${c.v===cur?"selected":""}>${c.t}</option>`).join("")}
+        </select></div>`;
+    });
+  }
+
+  let hydHtml="";
+  if(isPizza && !isSauce){
+    const hv=state.hyd[state.pizzaType];
+    const bv=state.ball[state.pizzaType];
+    hydHtml=`
+      <div class="ctrl"><label>Gram pr. pizza</label>
+        <div class="stepper">
+          <button type="button" data-ball="-10" aria-label="Mindre">\u2212</button>
+          <input type="number" id="ballInput" value="${bv}" min="120" max="400" step="10" inputmode="numeric">
+          <span class="suffix">g</span>
+          <button type="button" data-ball="10" aria-label="Større">+</button>
+        </div>
+        <div class="unit">dej pr. emne</div></div>
+      <div class="ctrl"><label>Hydration %</label>
+        <div class="stepper">
+          <button type="button" data-hyd="-1" aria-label="Lavere">\u2212</button>
+          <input type="number" id="hydInput" value="${hv}" min="50" max="90" step="1" inputmode="numeric">
+          <button type="button" data-hyd="1" aria-label="Højere">+</button>
+        </div>
+        <div class="unit">vand i % af mel</div></div>`;
+  }
+
+  // controls block: sauce gets a dåse-stepper, everything else gets the yield stepper
+  let controlsHtml;
+  if(isSauce){
+    controlsHtml=`
+      <div class="ctrl" style="flex:1.3">
+        <label>Antal dåser tomat</label>
+        <div class="stepper">
+          <button type="button" data-can="-1" aria-label="Færre">\u2212</button>
+          <input type="number" id="canInput" value="${state.sauceCans}" min="1" max="8" step="1" inputmode="numeric">
+          <button type="button" data-can="1" aria-label="Flere">+</button>
+        </div>
+        <div class="unit">à 400 g · ~3-4 pizzaer pr. dåse</div>
+      </div>`;
+  }else{
+    controlsHtml=`
+      <div class="ctrl" style="flex:1.3">
+        <label>${r.yieldLabel}</label>
+        <div class="stepper">
+          <button type="button" data-step="-1" aria-label="Færre">\u2212</button>
+          <input type="number" id="yieldInput" value="${qty}" min="${r.yieldMin}" max="${r.yieldMax}" step="${r.yieldStep}" inputmode="numeric">
+          <button type="button" data-step="1" aria-label="Flere">+</button>
+        </div>
+        <div class="unit">${r.yieldUnit}</div>
+      </div>
+      ${hydHtml}${optHtml}`;
+  }
+
+  card.innerHTML=`
+    <div class="cardhead">
+      <div><h2>${r.navn}</h2></div>
+      <button class="favbtn" id="favbtn" aria-pressed="${isFav(r.id)}" aria-label="Marker som favorit" title="Favorit">\u2605</button>
+    </div>
+    <p class="desc">${desc}</p>
+    ${subHtml}
+    <div class="controls">${controlsHtml}</div>
+    <table><caption>Ingredienser</caption><tbody id="ingbody"></tbody></table>
+    <div id="kcalbox"></div>
+    <div id="tlbox"></div>
+    <div class="method"><h3>Fremgangsmåde</h3><ol class="steps" id="stepbox"></ol></div>
+    <div id="tipbox"></div>`;
+
+  document.getElementById("favbtn").onclick=()=>toggleFav(r.id);
+
+  // sauce can-stepper
+  if(isSauce){
+    const canInput=document.getElementById("canInput");
+    card.querySelectorAll("[data-can]").forEach(btn=>{
+      btn.onclick=()=>{
+        let v=state.sauceCans+parseInt(btn.dataset.can);
+        v=Math.max(1,Math.min(8,v));state.sauceCans=v;canInput.value=v;refreshData();
+      };
+    });
+    canInput.addEventListener("input",()=>{
+      let v=parseInt(canInput.value);if(isNaN(v)||v<1||v>8)return;
+      state.sauceCans=v;refreshData();
+    });
+    canInput.addEventListener("blur",()=>{
+      let v=parseInt(canInput.value)||1;v=Math.max(1,Math.min(8,v));
+      state.sauceCans=v;canInput.value=v;refreshData();
+    });
+    // subtabs still need wiring (done below in isPizza block), so jump there
+    card.querySelectorAll("[data-ptype]").forEach(b=>{
+      b.onclick=()=>{state.pizzaType=b.dataset.ptype;renderCard();};
+    });
+    refreshData();
+    return;
+  }
+
+  const yInput=document.getElementById("yieldInput");
+  card.querySelectorAll("[data-step]").forEach(btn=>{
+    btn.onclick=()=>{
+      const d=parseInt(btn.dataset.step)*r.yieldStep;
+      let v=(state.yields[r.id]||r.baseYield)+d;
+      v=Math.max(r.yieldMin,Math.min(r.yieldMax,v));
+      state.yields[r.id]=v;yInput.value=v;refreshData();
+    };
+  });
+  yInput.addEventListener("input",()=>{
+    let v=parseInt(yInput.value);
+    if(isNaN(v))return;
+    if(v<r.yieldMin||v>r.yieldMax)return;
+    state.yields[r.id]=v;refreshData();
+  });
+  yInput.addEventListener("blur",()=>{
+    let v=parseInt(yInput.value)||r.baseYield;
+    v=Math.max(r.yieldMin,Math.min(r.yieldMax,v));
+    state.yields[r.id]=v;yInput.value=v;refreshData();
+  });
+
+  if(isPizza){
+    const hInput=document.getElementById("hydInput");
+    card.querySelectorAll("[data-hyd]").forEach(btn=>{
+      btn.onclick=()=>{
+        let v=(parseInt(state.hyd[state.pizzaType])||PIZZA_TYPES[state.pizzaType].defHyd)+parseInt(btn.dataset.hyd);
+        v=Math.max(50,Math.min(90,v));
+        state.hyd[state.pizzaType]=v;hInput.value=v;refreshData();
+      };
+    });
+    hInput.addEventListener("input",()=>{
+      let v=parseInt(hInput.value);
+      if(isNaN(v))return;
+      if(v<50||v>90)return;
+      state.hyd[state.pizzaType]=v;refreshData();
+    });
+    hInput.addEventListener("blur",()=>{
+      let v=parseInt(hInput.value)||PIZZA_TYPES[state.pizzaType].defHyd;
+      v=Math.max(50,Math.min(90,v));
+      state.hyd[state.pizzaType]=v;hInput.value=v;refreshData();
+    });
+
+    const bInput=document.getElementById("ballInput");
+    card.querySelectorAll("[data-ball]").forEach(btn=>{
+      btn.onclick=()=>{
+        let v=(parseInt(state.ball[state.pizzaType])||PIZZA_TYPES[state.pizzaType].ball)+parseInt(btn.dataset.ball);
+        v=Math.max(120,Math.min(400,v));
+        state.ball[state.pizzaType]=v;bInput.value=v;refreshData();
+      };
+    });
+    bInput.addEventListener("input",()=>{
+      let v=parseInt(bInput.value);
+      if(isNaN(v))return;
+      if(v<120||v>400)return;
+      state.ball[state.pizzaType]=v;refreshData();
+    });
+    bInput.addEventListener("blur",()=>{
+      let v=parseInt(bInput.value)||PIZZA_TYPES[state.pizzaType].ball;
+      v=Math.max(120,Math.min(400,v));
+      state.ball[state.pizzaType]=v;bInput.value=v;refreshData();
+    });
+
+    card.querySelectorAll("[data-ptype]").forEach(b=>{
+      b.onclick=()=>{state.pizzaType=b.dataset.ptype;renderCard();};
+    });
+  }
+
+  card.querySelectorAll("[data-opt]").forEach(sel=>{
+    sel.onchange=()=>{state.opts[r.id][sel.dataset.opt]=sel.value;refreshData();};
+  });
+
+  refreshData();
+}
+
+/* ---- wake lock: hold skærmen tændt ---- */
+let wakeLock=null, wakeWanted=false;
+const wakeBtn=document.getElementById("wakeBtn");
+const wakeLabel=document.getElementById("wakeLabel");
+const wakeSupported="wakeLock" in navigator;
+
+async function acquireWake(){
+  if(!wakeSupported)return false;
+  try{
+    wakeLock=await navigator.wakeLock.request("screen");
+    wakeLock.addEventListener("release",()=>{ /* dropped by system */ });
+    return true;
+  }catch(e){ return false; }
+}
+function setWakeUI(){
+  wakeBtn.setAttribute("aria-pressed", wakeWanted?"true":"false");
+  wakeLabel.textContent = wakeWanted ? "Skærm holdes tændt" : "Hold skærm tændt";
+}
+async function toggleWake(){
+  if(!wakeSupported){
+    wakeLabel.textContent="Ikke understøttet her";
+    return;
+  }
+  if(wakeWanted){
+    wakeWanted=false;
+    if(wakeLock){ try{await wakeLock.release();}catch(e){} wakeLock=null; }
+  }else{
+    const ok=await acquireWake();
+    wakeWanted=ok;
+    if(!ok)wakeLabel.textContent="Kunne ikke aktivere";
+  }
+  setWakeUI();
+}
+if(wakeBtn){
+  wakeBtn.onclick=toggleWake;
+  // re-acquire when returning to the tab/app if the user wanted it on
+  document.addEventListener("visibilitychange",async()=>{
+    if(wakeWanted && document.visibilityState==="visible" && !wakeLock){
+      const ok=await acquireWake(); if(!ok){wakeWanted=false;setWakeUI();}
+    }
+  });
+  if(!wakeSupported){ wakeBtn.style.opacity=".55"; }
+}
+
+function renderAll(){renderFavband();renderCatbar();renderPicker();renderCard();}
+renderAll();
+
+/* ---- PWA: registrer service worker ---- */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{ /* offline-cache utilgængelig; appen virker stadig online */ });
+  });
+}
+</script>
+</body>
+</html>
