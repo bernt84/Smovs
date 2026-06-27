@@ -62,6 +62,12 @@
     padding:6px 12px;border-radius:8px;cursor:pointer;transition:.12s}
   .cat:hover{color:var(--ink)}
   .cat[aria-selected="true"]{background:var(--crust-dim);color:#1a1714;border-color:var(--crust)}
+  .subcatbar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0 0}
+  .subcatbar:empty{margin:0}
+  .subcat{appearance:none;border:1px solid var(--line);background:var(--bg);color:var(--muted);
+    font-family:inherit;font-size:13px;padding:6px 13px;border-radius:8px;cursor:pointer;transition:.12s}
+  .subcat:hover{color:var(--ink)}
+  .subcat[aria-selected="true"]{background:var(--panel-2);color:var(--flour);border-color:var(--crust-dim)}
   .picker{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 4px}
   .chip{appearance:none;border:1px solid var(--line);background:var(--panel);color:var(--muted);
     font-family:inherit;font-size:15px;padding:9px 16px;border-radius:999px;cursor:pointer;transition:.15s;
@@ -175,6 +181,7 @@
 
   <div class="favband" id="favband"></div>
   <div class="catbar" id="catbar" role="tablist" aria-label="Kategori"></div>
+  <div class="subcatbar" id="subcatbar" role="tablist" aria-label="Underkategori"></div>
   <div class="picker" id="picker" role="tablist" aria-label="Vælg opskrift"></div>
   <main class="card" id="card" aria-live="polite"></main>
   <footer>Single-file · favoritter gemmes lokalt på din enhed</footer>
@@ -214,26 +221,9 @@ const RECIPES=[
    dynamic:"pizza"},
 
   {id:"boller",group:"Brød",navn:"Øl-grovboller",
-   desc:"Øl + mælkeprodukt + havregryn. Koldhævet med en ært gær.",
+   desc:"Øl + mælkeprodukt + havregryn. Koldhævet med en ært gær. Justér hydration efter ønsket dejfasthed.",
    yieldLabel:"Antal portioner",baseYield:1,yieldUnit:"portion",yieldStep:1,yieldMin:1,yieldMax:8,
-   ingredients:[
-     {name:"Øl",amount:330,unit:"ml",note:"33 cl"},
-     {name:"Mælkeprodukt",amount:500,unit:"g",note:"mælk, tykmælk el. cremefraiche"},
-     {name:"Havregryn",amount:175,unit:"g"},
-     {name:"Hvedemel",amount:650,unit:"g"},
-     {name:"Salt",amount:15,unit:"g"},
-     {name:"Frisk gær",amount:3,unit:"g",note:"ca. en ært"}],
-   steps:[
-     "Lad havregryn trække i øl + mælkeprodukt i 15-30 min.",
-     "Smuldr gæren i (kold væske er fint til koldhævning). Rør rundt.",
-     "Tilsæt mel og salt. Rør til ensartet, klistret dej — ingen æltning nødvendig.",
-     "Tildæk. Stå fremme 1-2 timer til den er i gang.",
-     "Stil i koldt rum / køleskab natten over i en rummelig skål (den vokser kraftigt).",
-     "Skrab klatter ud på bagepapir med to skeer eller våde hænder.",
-     "Bag ved 220-230° i ca. 20-25 min til gyldne og gennembagte."],
-   tips:[
-     "Vokser den ud af skålen? Brug en større skål eller bag når den lige er toppet.",
-     "Akkurat hævet om morgenen? Lad bollerne efterhæve 30-60 min ude før de ryger i ovnen."]},
+   dynamic:"boller"},
 
   {id:"makron",group:"Kager & søde",navn:"Makron muffins",
    desc:"Seje, søde, krakelerede. Skala efter antal muffins.",
@@ -500,6 +490,96 @@ const RECIPES=[
      "Remoncen skal boble op og lægge sig i fordybningerne — det er det der gør en brunsviger.",
      "Lidt sirup i remoncen holder den blød og blank efter afkøling.",
      "Bedst lun og frisk samme dag, men kan lunes igen i ovnen."]},
+
+  {id:"bearnaise",group:"Mad & tilbehør",sub:"Sauce",navn:"Sous vide bearnaise",
+   desc:"Silkeblød bearnaise lavet sous vide — skal ikke skilles. Skalér pr. æggeblomme.",
+   yieldLabel:"Antal æggeblommer",baseYield:4,yieldUnit:"æggeblomme",yieldStep:1,yieldMin:1,yieldMax:12,
+   ingredients:[
+     {name:"— Pr. æggeblomme —",amount:0,unit:"",note:"alt skalerer med antal blommer"},
+     {name:"Æggeblommer",amount:4,unit:"stk",round:"egg"},
+     {name:"Smeltet smør",amount:100,unit:"g",note:"klaret, lunt — 25 g pr. blomme"},
+     {name:"Hvidvinseddike",amount:15,unit:"ml",note:"til reduktion"},
+     {name:"Estragon",amount:1,unit:"spsk",note:"frisk, hakket"},
+     {name:"Skalotteløg",amount:1,unit:"stk",note:"finthakket"},
+     {name:"Vand",amount:15,unit:"ml"},
+     {name:"Salt & peber",amount:1,unit:"knsp"}],
+   steps:[
+     "Reduktion: kog eddike, vand, hakket skalotteløg og halvdelen af estragonen ind til ca. det halve. Si og lad køle lidt.",
+     "Indstil sous vide-karret til 65-68°.",
+     "Kom æggeblommer, reduktion og det lune klarede smør i en vakuumpose eller et patentglas.",
+     "Sous vide i 30-45 min ved 65-68°.",
+     "Hæld i en høj kande og stavblend til en glat, tyk emulsion.",
+     "Smag til med salt, peber og resten af den friske estragon. Server lun."],
+   tips:[
+     "Æggeblommer er emulgatoren: lecithin i blommen binder smørfedt og væske sammen, så saucen bliver tyk og cremet i stedet for at skille.",
+     "Jo flere æggeblommer, jo tykkere og mere stabil sauce — men også mere 'ægget' smag. 1 blomme pr. ~25 g smør er en god balance.",
+     "SKILT SAUCE? Æggeblommer kan redde den: pisk en frisk æggeblomme (evt. med en tsk vand) glat i en ren skål, og pisk så den skilte sauce i lidt ad gangen. Blommens emulgatorer samler fedtet igen.",
+     "Holder saucen for varm (over ~70°), koagulerer æggeblommerne og saucen skiller — hold den lun, ikke hed.",
+     "For tyk? Spæd med et par dråber lunt vand. For tynd? En ekstra blomme strammer den op."]},
+
+  {id:"chilidressing",group:"Mad & tilbehør",sub:"Dressing",navn:"Chilidressing",
+   desc:"Hjemmelavet cremet chilidressing — sød, stærk og syrlig. Ca. 500 ml ved basismængde.",
+   yieldLabel:"Portioner (à ~500 ml)",baseYield:1,yieldUnit:"portion",yieldStep:1,yieldMin:1,yieldMax:6,
+   ingredients:[
+     {name:"Rapsolie",amount:200,unit:"ml",note:"2 dl"},
+     {name:"Æg",amount:2,unit:"stk",round:"egg"},
+     {name:"Eddike",amount:30,unit:"ml",note:"2 spsk — lagereddike el. æbleeddike"},
+     {name:"Sukker",amount:1,unit:"spsk"},
+     {name:"Tomatpuré",amount:2,unit:"spsk"},
+     {name:"Majsstivelse",amount:1,unit:"spsk",note:"Maizena, varmes med vand til transparent"},
+     {name:"Fint salt",amount:1,unit:"tsk"},
+     {name:"Stærk chilipulver",amount:1,unit:"tsk",note:"eller mere efter smag"},
+     {name:"Hvidløg",amount:1,unit:"fed",note:"presset eller revet"},
+     {name:"Sennepspulver & paprika",amount:1,unit:"knsp",note:"valgfrit"},
+     {name:"Cremefraiche",amount:2,unit:"spsk",note:"valgfrit, for ekstra cremethed"}],
+   steps:[
+     "Varm majsstivelsen med lidt vand i en lille gryde til massen bliver klar/transparent. Lad køle.",
+     "Kom æg, eddike, sukker, tomatpuré, salt, chili og hvidløg i en høj kande.",
+     "Stavblend mens du langsomt hælder rapsolien i — dressingen emulgerer og tykner.",
+     "Blend den afkølede majsstivelse i, så den binder dressingen.",
+     "Smag til med chili, salt og evt. sennepspulver/paprika.",
+     "Vend evt. cremefraiche i til sidst for en mildere, cremet dressing.",
+     "Opbevar koldt i et rent glas."],
+   tips:[
+     "Æggene + olien danner en mayonnaise-lignende emulsion; majsstivelsen giver den ekstra fylde og blankhed.",
+     "Hæld olien i langsomt mens du blender — for hurtigt, og emulsionen kan skille.",
+     "Skiller den? Start forfra med en frisk æggeblomme i en ren skål og pisk den skilte dressing i lidt ad gangen.",
+     "Holder ~1 uge på køl. Smagen modnes og bliver rundere efter et døgn."]},
+
+  {id:"oksespidsbryst",group:"Mad & tilbehør",sub:"Hovedret",navn:"Oksespidsbryst m. kartoffelmos",
+   desc:"Notorious Food — braiseret oksespidsbryst i rødvin og fond, med cremet kartoffelmos. 4 timers braisering.",
+   yieldLabel:"Antal personer",baseYield:4,yieldUnit:"person",yieldStep:1,yieldMin:2,yieldMax:12,
+   ingredients:[
+     {name:"— Braisering —",amount:0,unit:""},
+     {name:"Oksespidsbryst",amount:2,unit:"stk",note:"store stykker"},
+     {name:"Skalotteløg",amount:5,unit:"stk",note:"halverede"},
+     {name:"Gulerødder",amount:4,unit:"stk",note:"hakkede"},
+     {name:"Selleri",amount:3,unit:"stk",note:"stænger, hakket"},
+     {name:"Hvidløg",amount:1,unit:"stk",note:"helt hoved, halveret"},
+     {name:"Tomatpuré",amount:0.5,unit:"tube"},
+     {name:"Rødvin",amount:0.5,unit:"flaske"},
+     {name:"Oksefond",amount:1,unit:"l",note:"til dækning"},
+     {name:"Rosmarin, timian, laurbær",amount:1,unit:"buket"},
+     {name:"— Kartoffelmos —",amount:0,unit:""},
+     {name:"Kartofler",amount:1,unit:"kg"},
+     {name:"Dobbeltfløde",amount:500,unit:"ml"},
+     {name:"Smør",amount:5,unit:"spsk"},
+     {name:"Purløg",amount:1,unit:"bdt",note:"hakket"}],
+   steps:[
+     "Skær overskydende fedt/sener af kødet. Krydr med salt og peber. Stil i køleskab uden låg mindst 1 time, helst natten over.",
+     "Tag ud, dup tørt, og svits 2,5 min på hver side i en varm pande til gylden og karamelliseret. Tag kødet op.",
+     "Sautér gulerødder, skalotteløg, selleri og hvidløg i lidt olivenolie ved middelhøj varme i 5 min.",
+     "Tilsæt ½ tube tomatpuré, kog af ~1 min. Afglasér med ½ flaske rødvin.",
+     "Læg kødet tilbage og dæk med oksefond. Bring i kog.",
+     "Sænk til svag kogning, tilsæt rosmarin, timian og laurbær. Læg låg på og lad boble forsigtigt i 4 timer.",
+     "Tag kødet op, dæk med folie. Si væsken og reducér den til det halve. Sæt til side.",
+     "Mos: kog kartoflerne møre. Pisk fløde + smør ved middel varme til emulgeret, tilsæt purløg og krydr.",
+     "Mos eller blend kartoflerne glatte og rør den varme fløde i. Smag til.",
+     "Varm kødet i den reducerede sauce. Anret: bund af mos, så kød, hæld sauce over og drys med purløg."],
+   tips:[
+     "Den lange, lave braisering (4 t) er det der gør spidsbrystet mørt — skynd ikke på den.",
+     "Reduktionen af braiseringsvæsken er saucen — jo mere du reducerer, jo dybere smag.",
+     "Mosen bliver ekstra silkeblød hvis du presser kartoflerne gennem en ricer frem for at mose."]},
 ];
 
 /* ---- state + favorites ---- */
@@ -531,10 +611,16 @@ const KCAL={ // pr. 100 g
   "peanutbutter":590,"hytteost 4%":100,"hytteost":100,
   "frisk gær":105,"tørgær":325,"gær":105,
   "hakkede tomater":32,
+  "rapsolie":884,"hvidvinseddike":20,"eddike":20,"estragon":5,
+  "skalotteløg":72,"tomatpuré":82,"tomatpure":82,"majsstivelse":380,"stærk chilipulver":280,
+  "sennepspulver & paprika":300,"cremefraiche":290,
+  "rødvin":85,"oksefond":10,"oksespidsbryst":250,"gulerødder":41,"selleri":16,
+  "dobbeltfløde":450,"kartofler":77,"purløg":30,"rosmarin, timian, laurbær":0,
 };
 // per-piece gram weights for "stk" ingredients not weighed
 const PIECE_G={"æg":55,"æg til pensling":55,"sammenpisket æg":55,"æggeblommer":18,"æggehvider":33,
-  "bananer":120,"banan":120,"appelsinskal":2,"hvidløg":5,"makroner":8};
+  "bananer":120,"banan":120,"appelsinskal":2,"hvidløg":5,"makroner":8,
+  "skalotteløg":30,"gulerødder":70,"selleri":40,"oksespidsbryst":600};
 // spoon/unit conversions to grams
 const UNIT_G={tsk:5,spsk:15,knsp:0.5,drys:0.5,fed:5,blade:0.5,pinch:0.5};
 
@@ -568,8 +654,10 @@ function computeKcal(ingredients, pieces){
     perPiece:pieces>0?total/pieces:null, known};
 }
 
-const CATEGORIES=["Alle","Pizza","Brød","Kager & søde","Madpakke"];
-let state={recipe:RECIPES[0].id,yields:{},opts:{},pizzaType:"napoli",hyd:{},ball:{},sauceCans:1,cat:"Alle"};
+const CATEGORIES=["Alle","Pizza","Brød","Kager & søde","Madpakke","Mad & tilbehør"];
+// kategorier der har under-faner (afledt af recipes' sub-felt)
+const SUBCATS={"Mad & tilbehør":["Alle","Dressing","Sauce","Hovedret","Tilbehør"]};
+let state={recipe:RECIPES[0].id,yields:{},opts:{},pizzaType:"napoli",hyd:{},ball:{},sauceCans:1,cat:"Alle",subcat:"Alle",bollerHyd:101};
 RECIPES.forEach(r=>{
   state.yields[r.id]=r.baseYield;state.opts[r.id]={};
   (r.options||[]).forEach(o=>{const def=o.choices.find(c=>c.sel)||o.choices[0];state.opts[r.id][o.id]=def.v;});
@@ -584,6 +672,47 @@ function fmt(n){
   return Math.round(n).toString();
 }
 function fmtEgg(n){return Math.max(1,Math.round(n)).toString();}
+
+function bollerModel(qty){
+  const scale=qty;
+  const flour=650*scale, oats=175*scale, beer=330*scale, salt=15*scale, yeast=3*scale;
+  const dry=flour+oats;
+  let hyd=parseFloat(state.bollerHyd);
+  if(isNaN(hyd))hyd=100;
+  hyd=Math.max(80,Math.min(120,hyd));
+  const totalLiquid=dry*hyd/100;
+  let milk=totalLiquid-beer;
+  if(milk<0)milk=0;
+  const baseMilk=500*scale;
+  const diff=Math.round(milk-baseMilk);
+  let hydNote;
+  if(diff>0) hydNote="+"+diff+" g mælk vs. standard";
+  else if(diff<0) hydNote=diff+" g mælk vs. standard";
+  else hydNote="standard";
+  return {
+    ingredients:[
+      {name:"Øl",amount:beer,unit:"ml",note:"fast — 33 cl pr. portion"},
+      {name:"Mælkeprodukt",amount:milk,unit:"g",note:hydNote+" · mælk, tykmælk el. cremefraiche"},
+      {name:"Havregryn",amount:oats,unit:"g"},
+      {name:"Hvedemel",amount:flour,unit:"g"},
+      {name:"Salt",amount:salt,unit:"g"},
+      {name:"Frisk gær",amount:yeast,unit:"g",note:"ca. en ært"}],
+    steps:[
+      "Lad havregryn trække i øl + mælkeprodukt i 15-30 min (de suger en stor del af væsken).",
+      "Smuldr gæren i (kold væske er fint til koldhævning). Rør rundt.",
+      "Tilsæt mel og salt. Rør til ensartet, klistret dej — ingen æltning nødvendig.",
+      "Tildæk. Stå fremme 1-2 timer til den er i gang.",
+      "Stil i koldt rum / køleskab natten over i en rummelig skål (den vokser kraftigt).",
+      "Skrab klatter ud på bagepapir med to skeer eller våde hænder.",
+      "Bag ved 220-230° i ca. 20-25 min til gyldne og gennembagte."],
+    tips:[
+      "Hydration her er samlet væske (øl + mælk) i % af mel + havre. Havregrynene suger meget, så dejen føles fastere end tallet antyder.",
+      "Skruer du hydration op, justeres MÆLKEN (øllen holdes fast på 33 cl pr. portion). Ned = mindre mælk = fastere dej.",
+      "~100% er standard. Vil du have en dej der er nemmere at forme i hånden, gå mod 85-90%.",
+      "Vokser den ud af skålen? Brug en større skål eller bag når den lige er toppet.",
+      "Akkurat hævet om morgenen? Lad bollerne efterhæve 30-60 min ude før de ryger i ovnen."]
+  };
+}
 
 function sauceModel(cans){
   const n=Math.max(1,Math.min(8,cans));
@@ -839,6 +968,7 @@ function pizzaModel(qty,opts){
 /* ---- render (split to avoid input jumping) ---- */
 const favband=document.getElementById("favband");
 const catbar=document.getElementById("catbar");
+const subcatbar=document.getElementById("subcatbar");
 const picker=document.getElementById("picker");
 const card=document.getElementById("card");
 
@@ -846,7 +976,28 @@ function renderCatbar(){
   catbar.innerHTML=CATEGORIES.map(c=>`
     <button class="cat" role="tab" aria-selected="${state.cat===c}" data-cat="${c}">${c}</button>`).join("");
   catbar.querySelectorAll("[data-cat]").forEach(b=>{
-    b.onclick=()=>{state.cat=b.dataset.cat;renderCatbar();renderPicker();};
+    b.onclick=()=>{
+      state.cat=b.dataset.cat;state.subcat="Alle";
+      const list=state.cat==="Alle"?RECIPES:RECIPES.filter(r=>r.group===state.cat);
+      if(list.length && !list.some(r=>r.id===state.recipe)) state.recipe=list[0].id;
+      renderAll();
+    };
+  });
+}
+
+function renderSubcatbar(){
+  const subs=SUBCATS[state.cat];
+  if(!subs){ subcatbar.innerHTML=""; return; }
+  subcatbar.innerHTML=subs.map(s=>`
+    <button class="subcat" role="tab" aria-selected="${state.subcat===s}" data-subcat="${s}">${s}</button>`).join("");
+  subcatbar.querySelectorAll("[data-subcat]").forEach(b=>{
+    b.onclick=()=>{
+      state.subcat=b.dataset.subcat;
+      let list=RECIPES.filter(r=>r.group===state.cat);
+      if(state.subcat!=="Alle") list=list.filter(r=>r.sub===state.subcat);
+      if(list.length && !list.some(r=>r.id===state.recipe)) state.recipe=list[0].id;
+      renderAll();
+    };
   });
 }
 
@@ -875,7 +1026,11 @@ function renderFavband(){
 }
 
 function renderPicker(){
-  const list=state.cat==="Alle"?RECIPES:RECIPES.filter(r=>r.group===state.cat);
+  let list=state.cat==="Alle"?RECIPES:RECIPES.filter(r=>r.group===state.cat);
+  // under-fane filtrering (kun for kategorier med subcats)
+  if(SUBCATS[state.cat] && state.subcat!=="Alle"){
+    list=list.filter(r=>r.sub===state.subcat);
+  }
   picker.innerHTML=list.map(r=>`
     <button class="chip" role="tab" aria-selected="${state.recipe===r.id}" data-rid="${r.id}">
       ${isFav(r.id)?'<span class="star" style="color:var(--gold)">\u2605</span>':''}${r.navn}
@@ -914,6 +1069,9 @@ function refreshData(){
   }else if(r.dynamic==="sarah"){
     const m=sarahModel(qty,opts);
     ingredients=m.ingredients;steps=m.steps;tips=m.tips;
+  }else if(r.dynamic==="boller"){
+    const m=bollerModel(qty);
+    ingredients=m.ingredients;steps=m.steps;tips=m.tips;
   }else{
     ingredients=r.ingredients.map(i=>({...i,amount:i.amount*scale}));
   }
@@ -951,6 +1109,7 @@ function renderCard(){
   const qty=state.yields[r.id],opts=state.opts[r.id];
   const isPizza=r.dynamic==="pizza";
   const isSauce=isPizza && state.pizzaType==="sauce";
+  const isBoller=r.dynamic==="boller";
 
   let subHtml="";
   if(isPizza){
@@ -992,6 +1151,17 @@ function renderCard(){
           <button type="button" data-hyd="1" aria-label="Højere">+</button>
         </div>
         <div class="unit">vand i % af mel</div></div>`;
+  }
+  if(isBoller){
+    const bh=state.bollerHyd;
+    hydHtml=`
+      <div class="ctrl"><label>Hydration %</label>
+        <div class="stepper">
+          <button type="button" data-bhyd="-5" aria-label="Lavere">\u2212</button>
+          <input type="number" id="bhydInput" value="${bh}" min="80" max="120" step="5" inputmode="numeric">
+          <button type="button" data-bhyd="5" aria-label="Højere">+</button>
+        </div>
+        <div class="unit">øl + mælk i % af mel + havre</div></div>`;
   }
 
   // controls block: sauce gets a dåse-stepper, everything else gets the yield stepper
@@ -1082,6 +1252,27 @@ function renderCard(){
     v=Math.max(r.yieldMin,Math.min(r.yieldMax,v));
     state.yields[r.id]=v;yInput.value=v;refreshData();
   });
+
+  if(isBoller){
+    const bhInput=document.getElementById("bhydInput");
+    card.querySelectorAll("[data-bhyd]").forEach(btn=>{
+      btn.onclick=()=>{
+        let v=(parseInt(state.bollerHyd)||100)+parseInt(btn.dataset.bhyd);
+        v=Math.max(80,Math.min(120,v));
+        state.bollerHyd=v;bhInput.value=v;refreshData();
+      };
+    });
+    bhInput.addEventListener("input",()=>{
+      let v=parseInt(bhInput.value);
+      if(isNaN(v)||v<80||v>120)return;
+      state.bollerHyd=v;refreshData();
+    });
+    bhInput.addEventListener("blur",()=>{
+      let v=parseInt(bhInput.value)||100;
+      v=Math.max(80,Math.min(120,v));
+      state.bollerHyd=v;bhInput.value=v;refreshData();
+    });
+  }
 
   if(isPizza){
     const hInput=document.getElementById("hydInput");
@@ -1180,7 +1371,7 @@ if(wakeBtn){
   if(!wakeSupported){ wakeBtn.style.opacity=".55"; }
 }
 
-function renderAll(){renderFavband();renderCatbar();renderPicker();renderCard();}
+function renderAll(){renderFavband();renderCatbar();renderSubcatbar();renderPicker();renderCard();}
 renderAll();
 
 /* ---- PWA: registrer service worker ---- */
