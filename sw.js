@@ -1,5 +1,5 @@
 /* Bageberegner service worker */
-const CACHE = "smovs-v3";
+const CACHE = "smovs-v6";
 const ASSETS = [
   "./index.html",
   "./manifest.json",
